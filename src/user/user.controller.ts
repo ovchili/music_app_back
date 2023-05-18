@@ -37,15 +37,15 @@ export class UserController {
 		return this.userService.getAllUsers(searchTerm);
 	}
 
-	@Get(':id')
-	@Auth('admin')
-	async getUser(@Param('id', idValidationPipe) id: string) {
-		return this.userService.byId(id);
-	}
-
 	@Get('profile')
 	@Auth()
 	async getProfile(@User('_id') id: string) {
+		return this.userService.byId(id);
+	}
+
+	@Get(':id')
+	@Auth('admin')
+	async getUser(@Param('id', idValidationPipe) id: string) {
 		return this.userService.byId(id);
 	}
 
