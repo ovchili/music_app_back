@@ -7,7 +7,7 @@ import { ModelType } from '@typegoose/typegoose/lib/types';
 import { InjectModel } from 'nestjs-typegoose';
 import { UserModel } from './user.model';
 import { genSalt, hash } from 'bcryptjs';
-import { UpdateUserDTO } from './dto/update-user.dto';
+import { UpdateProfileDTO, UpdateUserDTO } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -53,7 +53,7 @@ export class UserService {
 		return user;
 	}
 
-	async updateProfile(id: string, dto: UpdateUserDTO) {
+	async updateProfile(id: string, dto: UpdateProfileDTO) {
 		const user = await this.byId(id);
 		if (dto.email) {
 			const isSameEmail = await this.userModel.findOne({ email: dto.email });
@@ -63,9 +63,8 @@ export class UserService {
 			}
 			user.email = dto.email;
 		}
-		const isSameLogin = await this.userModel.findOne({ login: dto.login });
-
 		if (dto.login) {
+			const isSameLogin = await this.userModel.findOne({ login: dto.login });
 			if (isSameLogin && String(id) !== String(isSameLogin._id)) {
 				throw new BadRequestException('Логин уже занят');
 			}
@@ -75,6 +74,14 @@ export class UserService {
 			const salt = await genSalt(10);
 			user.password = await hash(dto.password, salt);
 		}
+
+		await user.save();
+
+		return user;
+	}
+
+	async update(id: string, dto: UpdateUserDTO) {
+		const user = await this.updateProfile(id, dto);
 
 		if (dto.isAdmin || dto.isAdmin === false) user.isAdmin = dto.isAdmin;
 

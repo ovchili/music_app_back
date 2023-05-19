@@ -15,7 +15,7 @@ import { UserService } from './user.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { User } from './decorators/user.decorator';
-import { UpdateUserDTO } from './dto/update-user.dto';
+import { UpdateProfileDTO, UpdateUserDTO } from './dto/update-user.dto';
 import { idValidationPipe } from 'src/pipes/id.validation.pipe';
 
 @ApiBearerAuth()
@@ -53,7 +53,7 @@ export class UserController {
 	@UsePipes(new ValidationPipe())
 	@Put('profile')
 	@Auth()
-	async updateProfile(@User('_id') id: string, @Body() dto: UpdateUserDTO) {
+	async updateProfile(@User('_id') id: string, @Body() dto: UpdateProfileDTO) {
 		return this.userService.updateProfile(id, dto);
 	}
 
@@ -65,7 +65,7 @@ export class UserController {
 		@Param('id', idValidationPipe) id: string,
 		@Body() dto: UpdateUserDTO,
 	) {
-		return this.userService.updateProfile(id, dto);
+		return this.userService.update(id, dto);
 	}
 
 	@HttpCode(HttpStatus.OK)

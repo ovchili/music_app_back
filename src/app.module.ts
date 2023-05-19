@@ -6,6 +6,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypegooseModule } from 'nestjs-typegoose';
 import { getMongoDbConfig } from './config/mongo.config';
 import { UserModule } from './user/user.module';
+import { GenreModule } from './genre/genre.module';
+import { GroupsModule } from './group/group.module';
+import { FileModule } from './file/file.module';
 
 @Module({
 	imports: [
@@ -17,6 +20,9 @@ import { UserModule } from './user/user.module';
 		}),
 		AuthModule,
 		UserModule,
+		GenreModule,
+		GroupsModule,
+		FileModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

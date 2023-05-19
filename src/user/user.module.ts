@@ -11,7 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 			{
 				typegooseClass: UserModel,
 				schemaOptions: {
-					collection: 'user',
+					collection: 'User',
 				},
 			},
 		]),
