@@ -6,7 +6,7 @@ import {
 import { ModelType } from '@typegoose/typegoose/lib/types';
 import { InjectModel } from 'nestjs-typegoose';
 import { GenreModel } from './genre.model';
-import { CreateGenreDTO } from './dto/create-genre.dto';
+import { CreateGenreDTO } from './dto/genre.dto';
 import { Types } from 'mongoose';
 
 @Injectable()
@@ -15,17 +15,20 @@ export class GenreService {
 		@InjectModel(GenreModel) private readonly genreModel: ModelType<GenreModel>,
 	) {}
 
+	NOT_FOUND_MESSAGE = 'Жанр не найден';
+	IS_EXISTS_MESSAGE = 'Жанр уже существует';
+
 	async get(string: string) {
 		if (!Types.ObjectId.isValid(string)) {
 			const genre = await this.genreModel.findOne({ slug: string });
 
-			if (!genre) throw new NotFoundException('Жанр не найден');
+			if (!genre) throw new NotFoundException(this.NOT_FOUND_MESSAGE);
 
 			return genre;
 		}
 
 		const genre = await this.genreModel.findById(string);
-		if (!genre) throw new NotFoundException('Жанр не найден');
+		if (!genre) throw new NotFoundException(this.NOT_FOUND_MESSAGE);
 
 		return genre;
 	}
@@ -56,7 +59,7 @@ export class GenreService {
 	async create(dto: CreateGenreDTO) {
 		const genreBySlug = await this.genreModel.findOne({ slug: dto.slug });
 
-		if (genreBySlug) throw new BadRequestException('Жанр уже существует');
+		if (genreBySlug) throw new BadRequestException(this.IS_EXISTS_MESSAGE);
 
 		const genre = await new this.genreModel(dto).save();
 
@@ -70,7 +73,7 @@ export class GenreService {
 			const genreBySlug = await this.genreModel.findOne({ slug: dto.slug });
 
 			if (genreBySlug && String(genreBySlug._id) !== String(id))
-				throw new BadRequestException('Жанр уже существует');
+				throw new BadRequestException(this.IS_EXISTS_MESSAGE);
 
 			genre.slug = dto.slug;
 		}
@@ -85,7 +88,7 @@ export class GenreService {
 	async delete(id: string) {
 		const genre = await this.genreModel.findByIdAndDelete(id);
 
-		if (!genre) throw new NotFoundException('Жанр не найден');
+		if (!genre) throw new NotFoundException(this.NOT_FOUND_MESSAGE);
 
 		return genre;
 	}

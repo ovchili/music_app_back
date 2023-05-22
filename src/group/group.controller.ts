@@ -16,7 +16,7 @@ import { GroupService } from './group.service';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { idValidationPipe } from 'src/pipes/id.validation.pipe';
-import { CreateGroupDTO } from './dto/create-group.dto';
+import { CreateGroupDTO, UpdateGroupDTO } from './dto/group.dto';
 
 @ApiBearerAuth()
 @ApiTags('groups')
@@ -57,7 +57,7 @@ export class GroupController {
 	@Put(':id')
 	async update(
 		@Param('id', idValidationPipe) id: string,
-		@Body() dto: CreateGroupDTO,
+		@Body() dto: UpdateGroupDTO,
 	) {
 		return this.groupService.update(id, dto);
 	}

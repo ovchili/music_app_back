@@ -7,27 +7,33 @@ import { ModelType } from '@typegoose/typegoose/lib/types';
 import { Types } from 'mongoose';
 import { InjectModel } from 'nestjs-typegoose';
 import { AlbumModel } from './album.model';
-import { CreateAlbumDTO } from './dto/album.dto';
+import { CreateAlbumDTO, UpdateAlbumDTO } from './dto/album.dto';
+import { GroupModel } from 'src/group/group.model';
 
 @Injectable()
 export class AlbumService {
 	constructor(
 		@InjectModel(AlbumModel) private readonly albumModel: ModelType<AlbumModel>,
+
+		@InjectModel(GroupModel) private readonly groupModel: ModelType<GroupModel>,
 	) {}
+
+	NOT_FOUND_MESSAGE = 'Альбом не найден';
+	IS_EXISTS_MESSAGE = 'Альбом уже существует';
 
 	async get(string: string) {
 		if (!Types.ObjectId.isValid(string)) {
-			const group = await this.albumModel.findOne({ slug: string });
+			const album = await this.albumModel.findOne({ slug: string });
 
-			if (!group) throw new NotFoundException('Группа не найдена');
+			if (!album) throw new NotFoundException(this.NOT_FOUND_MESSAGE);
 
-			return group;
+			return album;
 		}
 
-		const group = await this.albumModel.findById(string);
-		if (!group) throw new NotFoundException('Группа не найдена');
+		const album = await this.albumModel.findById(string);
+		if (!album) throw new NotFoundException(this.NOT_FOUND_MESSAGE);
 
-		return group;
+		return album;
 	}
 
 	async getAll(searchTerm?: string) {
@@ -48,45 +54,63 @@ export class AlbumService {
 
 		return this.albumModel
 			.find(options)
+			.populate('group')
 			.select('-updatedAt -__v')
 			.sort({ createdAT: 'desc' })
 			.exec();
 	}
 
 	async create(dto: CreateAlbumDTO) {
-		const groupBySlug = await this.albumModel.findOne({ slug: dto.slug });
+		const albumBySlug = await this.albumModel.findOne({ slug: dto.slug });
 
-		if (groupBySlug) throw new BadRequestException('Группа уже существует');
+		if (albumBySlug) throw new BadRequestException(this.IS_EXISTS_MESSAGE);
 
-		const group = await new this.albumModel(dto).save();
+		const album = await new this.albumModel(dto).save();
 
-		return group;
+		await this.groupModel.findByIdAndUpdate(
+			dto.group,
+			{ $push: { albums: album._id } },
+			{ new: true, useFindAndModify: false },
+		);
+		return album;
 	}
 
-	async update(id: string, dto: CreateAlbumDTO) {
-		const group = await this.get(id);
+	async update(id: string, dto: UpdateAlbumDTO) {
+		const album = await this.get(id);
 
 		if (dto.slug) {
-			const groupBySlug = await this.albumModel.findOne({ slug: dto.slug });
+			const albumBySlug = await this.albumModel.findOne({ slug: dto.slug });
 
-			if (groupBySlug && String(groupBySlug._id) !== String(id))
-				throw new BadRequestException('Группа уже существует');
+			if (albumBySlug && String(albumBySlug._id) !== String(id))
+				throw new BadRequestException(this.IS_EXISTS_MESSAGE);
 
-			group.slug = dto.slug;
+			album.slug = dto.slug;
 		}
 
-		if (dto.name) group.name = dto.name;
+		if (dto.name) album.name = dto.name;
 
-		await group.save();
+		if (dto.posterPath) album.posterPath = dto.posterPath;
 
-		return group;
+		if (dto.group) {
+			const group = await this.groupModel.findByIdAndUpdate(
+				dto.group,
+				{ $push: { albums: album._id } },
+				{ new: true, useFindAndModify: false },
+			);
+
+			album.group = group;
+		}
+
+		await album.save();
+
+		return album;
 	}
 
 	async delete(id: string) {
-		const group = await this.albumModel.findByIdAndDelete(id);
+		const album = await this.albumModel.findByIdAndDelete(id);
 
-		if (!group) throw new NotFoundException('Группа не найдена');
+		if (!album) throw new NotFoundException(this.NOT_FOUND_MESSAGE);
 
-		return group;
+		return album;
 	}
 }

@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { GenreService } from './genre.service';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CreateGenreDTO } from './dto/create-genre.dto';
+import { CreateGenreDTO } from './dto/genre.dto';
 import { idValidationPipe } from 'src/pipes/id.validation.pipe';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 

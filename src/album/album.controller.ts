@@ -16,7 +16,7 @@ import { AlbumService } from './album.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { ApiQuery, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { idValidationPipe } from 'src/pipes/id.validation.pipe';
-import { CreateAlbumDTO } from './dto/album.dto';
+import { CreateAlbumDTO, UpdateAlbumDTO } from './dto/album.dto';
 
 @ApiBearerAuth()
 @ApiTags('albums')
@@ -57,7 +57,7 @@ export class AlbumController {
 	@Put(':id')
 	async update(
 		@Param('id', idValidationPipe) id: string,
-		@Body() dto: CreateAlbumDTO,
+		@Body() dto: UpdateAlbumDTO,
 	) {
 		return this.albumService.update(id, dto);
 	}
