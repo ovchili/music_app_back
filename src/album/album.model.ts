@@ -1,8 +1,8 @@
 import { Ref, prop } from '@typegoose/typegoose';
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
-import { AlbumModel } from 'src/album/album.model';
-export interface GroupModel extends Base {}
-export class GroupModel extends TimeStamps {
+import { GroupModel } from 'src/group/group.model';
+export interface AlbumModel extends Base {}
+export class AlbumModel extends TimeStamps {
 	@prop()
 	name: string;
 
@@ -12,6 +12,6 @@ export class GroupModel extends TimeStamps {
 	@prop()
 	posterPath: string;
 
-	@prop({ ref: () => AlbumModel })
-	albums: Ref<AlbumModel>[];
+	@prop({ ref: () => GroupModel })
+	group: Ref<GroupModel>;
 }
